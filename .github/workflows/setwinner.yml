@@ -1,4 +1,4 @@
-name: Create Task
+name: Set Winner
 
 on:
   schedule:
@@ -16,5 +16,4 @@ jobs:
         run: |
           curl -X PUT ${{ secrets.SET_WINNER_API }} \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer ${{ secrets.AUTHENTICATION_TOKEN }}" \
-          -d '{"durationHours": 21}'
+          -H "Authorization: Bearer ${{ secrets.AUTHENTICATION_TOKEN }}"

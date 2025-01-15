@@ -71,13 +71,13 @@ export default async function TaskById({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
-        <Link href="/">
+        <Link href="/tasks">
           <Button
             variant="outline"
             className="mb-6 hover:bg-white/90 shadow-sm"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            Back to Tasks
           </Button>
         </Link>
 

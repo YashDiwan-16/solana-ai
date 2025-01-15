@@ -96,9 +96,7 @@ export class TaskGeneratorService {
     return tweetContent;
   }
 
-  public static async createNewTask(
-    durationHours: number = 4
-  ): Promise<string> {
+  public static async createNewTask(durationHours: number = 4) {
     const task = await this.generateTaskWithAI();
 
     const client = await clientPromise;
@@ -118,8 +116,11 @@ export class TaskGeneratorService {
       isWinnerDeclared: false,
       _id: new ObjectId(),
     });
-    // await this.PostTweetofTask(task, result.insertedId.toString());
-    return result.insertedId.toString();
+    const tweet = await this.PostTweetofTask(
+      task,
+      result.insertedId.toString()
+    );
+    return { taskId: result.insertedId.toString(), tweet };
   }
 
   public static async getActiveTask() {
@@ -133,12 +134,11 @@ export class TaskGeneratorService {
   public static async PostTweetofTask(task: GeneratedTask, taskId: string) {
     try {
       const tweetContent = await this.GenerateTweetContent(task, taskId);
-      const tweet = await twitterClient.v1.tweet("statuses/update", {
-        status: tweetContent,
-      });
-      console.log("Tweet posted:", tweet);
+
+      const tweet = await twitterClient.readWrite.v2.tweet(tweetContent);
+      return tweet;
     } catch (error) {
-      console.error("Error posting tweet:", error);
+      return error;
     }
   }
 
@@ -171,17 +171,22 @@ export class TaskGeneratorService {
   }
 
   public static async setTaskWinner() {
-    const winners: string[] = [];
+    let updateCount = 0;
     const client = await clientPromise;
     const db = client.db("tweetcontest");
     const tasks = db.collection("tasks");
     const submission = db.collection("submissions");
-    // check if the task isActive is false and isWinnerDeclared is false
-    const completedTask = await tasks
-      .find({ isActive: false, isWinnerDeclared: false })
+
+    // check if the task isActive is false and isWinnerDeclared is false and endTime should be 2 hours before the current time
+    const completedTaskinDeclaredTime = await tasks
+      .find({
+        isActive: false,
+        isWinnerDeclared: false,
+        endTime: { $lt: new Date(new Date().getTime() - 2 * 60 * 60 * 1000) },
+      })
       .toArray();
     // After task is inactive then evaluate the task as submission collection have the task id and submission score. update the top 3 winners in the task collection winner field array
-    const taskIds = completedTask.map((task) => task._id);
+    const taskIds = completedTaskinDeclaredTime.map((task) => task._id);
 
     for (const taskId of taskIds) {
       const submissions = await submission
@@ -191,21 +196,19 @@ export class TaskGeneratorService {
         .toArray();
       const winners = submissions.map((submission) => submission.publicKey);
       const updatedWinner = await tasks.updateOne(
+        { _id: taskId },
         {
-          _id: taskId,
-        },
-        { $set: { winners } }
+          $set: {
+            winners,
+            isWinnerDeclared: true,
+          },
+        }
       );
-
-      if (updatedWinner.modifiedCount > 0) {
-        await tasks.updateOne(
-          { _id: taskId },
-          { $set: { isWinnerDeclared: true } }
-        );
-        winners.push(submissions.map((submission) => submission.publicKey));
+      if (updatedWinner) {
+        updateCount++;
       }
     }
-    return winners;
+    return updateCount;
   }
 
   // write a method to set the task as inactive if the end time has passed

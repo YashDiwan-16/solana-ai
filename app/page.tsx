@@ -37,7 +37,7 @@ export default function LandingPage() {
             className="flex justify-center mb-20 sm:mb-32"
           >
             <Link
-              href="#"
+              href="/tasks"
               className="px-8 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-full font-semibold text-lg transition duration-300 ease-in-out transform hover:scale-105"
             >
               Get Started
@@ -113,10 +113,10 @@ export default function LandingPage() {
             learn and grow while earning crypto rewards.
           </motion.p>
           <Link
-            href="#"
+            href="/tasks"
             className="px-8 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-full font-semibold text-lg transition duration-300 ease-in-out transform hover:scale-105"
           >
-            Start Innovating
+            Start Exploring
           </Link>
         </footer>
       </main>
